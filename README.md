@@ -16,21 +16,26 @@ Betriebsanweisung und Gefährdungsbeurteilung zu prüfen ist.
 
 ## Schnellstart
 
+Voraussetzung: [Node.js](https://nodejs.org) (LTS-Version).
+
 ```bash
 npm install
-cp .env.example .env          # SESSION_SECRET setzen (siehe unten)
-npm run db:push               # Datenbankschema anlegen
-npm run db:seed               # Demo-Daten (optional, empfohlen)
+npm run setup                 # .env, Datenbank und Demo-Daten in einem Schritt
 npm run dev                   # http://localhost:3000
 ```
 
-`SESSION_SECRET` erzeugen:
+`npm run setup` legt eine `.env` mit zufälligem `SESSION_SECRET` an, überträgt das
+Datenbankschema und lädt die Demo-Daten. Der Befehl ist gefahrlos wiederholbar:
 
-```bash
-node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
-```
+- Eine vorhandene `.env` wird **nicht** überschrieben. Nur ein fehlendes oder zu
+  kurzes `SESSION_SECRET` wird ersetzt – ein funktionierendes bleibt, sonst
+  würden alle Anmeldungen ungültig.
+- Demo-Daten werden nur geladen, solange die Datenbank noch keinen Betrieb
+  enthält. Erzwingen lässt sich das mit `npm run setup -- --demo`.
 
-**Demo-Zugang nach `npm run db:seed`:**
+Beim nächsten Start genügt `npm run dev`.
+
+**Demo-Zugang nach `npm run setup`:**
 
 | | |
 |---|---|
@@ -187,6 +192,7 @@ auch für Tablets in Werkstatt und Lager).
 
 | Befehl | Zweck |
 |---|---|
+| `npm run setup` | Einrichtung: `.env`, Datenbank, Demo-Daten (wiederholbar) |
 | `npm run dev` | Entwicklungsserver |
 | `npm run build` / `npm start` | Produktionsbuild und -server |
 | `npm run typecheck` | TypeScript prüfen |
