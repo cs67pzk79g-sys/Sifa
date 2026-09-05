@@ -1,0 +1,190 @@
+// Data model for the occupational safety documentation MVP.
+//
+// Provider note: development runs on SQLite, production is meant to run on
+// PostgreSQL in the EU. To switch, set provider = "postgresql" here and point
+// DATABASE_URL at the Postgres instance. Everything else stays the same,
+// because the schema deliberately avoids provider specific column types:
+// structured payloads (SDB sections, document content) are stored as JSON
+// encoded String columns, which both providers handle identically.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// A company using the software (the "Betrieb").
+model Betrieb {
+  id        String   @id @default(cuid())
+  name      String
+  branche   String
+  /// Route that serves the uploaded logo, e.g. /api/dateien/<id>. Null = no logo.
+  logoUrl   String?
+  logoId    String?  @unique
+  /// Hard to guess token for the login free read only view.
+  leserToken String  @unique
+  erstelltAm DateTime @default(now())
+
+  logo        Datei?       @relation("BetriebLogo", fields: [logoId], references: [id], onDelete: SetNull)
+  nutzer      Nutzer[]
+  gefahrstoffe Gefahrstoff[]
+  dokumente   Dokument[]
+}
+
+enum Rolle {
+  ADMIN
+}
+
+/// Admin accounts. Readers have no user record, they only hold a link token.
+model Nutzer {
+  id           String   @id @default(cuid())
+  betriebId    String
+  email        String   @unique
+  passwortHash String
+  rolle        Rolle    @default(ADMIN)
+  erstelltAm   DateTime @default(now())
+
+  betrieb Betrieb @relation(fields: [betriebId], references: [id], onDelete: Cascade)
+
+  @@index([betriebId])
+}
+
+/// A hazardous substance handled in the company.
+model Gefahrstoff {
+  id         String   @id @default(cuid())
+  betriebId  String
+  name       String
+  hersteller String
+  erstelltAm DateTime @default(now())
+
+  betrieb      Betrieb              @relation(fields: [betriebId], references: [id], onDelete: Cascade)
+  sdbDokumente SdbDokument[]
+  kontext      GefahrstoffKontext?
+  vorschlaege  Aenderungsvorschlag[]
+  dokumente    Dokument[]
+
+  @@index([betriebId])
+}
+
+/// One row per uploaded safety data sheet version.
+model SdbDokument {
+  id            String   @id @default(cuid())
+  gefahrstoffId String
+  /// Route that serves the stored PDF, e.g. /api/dateien/<id>.
+  dateiUrl      String
+  dateiId       String   @unique
+  dateiName     String
+  hochgeladenAm DateTime @default(now())
+  versionNummer Int
+  /// Raw text as extracted from the PDF.
+  extrahierterText String
+  /// JSON encoded map of the 16 REACH sections: { "1": "...", ..., "16": "..." }
+  abschnitte    String
+  /// How many of the 16 sections were recognised - used to warn about scans.
+  erkannteAbschnitte Int @default(0)
+
+  gefahrstoff     Gefahrstoff           @relation(fields: [gefahrstoffId], references: [id], onDelete: Cascade)
+  datei           Datei                 @relation(fields: [dateiId], references: [id], onDelete: Cascade)
+  vorschlaegeAlt  Aenderungsvorschlag[] @relation("AlteSdb")
+  vorschlaegeNeu  Aenderungsvorschlag[] @relation("NeueSdb")
+
+  @@unique([gefahrstoffId, versionNummer])
+  @@index([gefahrstoffId])
+}
+
+/// Company specific context for one substance - the matrix that turns a generic
+/// SDB change into a statement about *this* company.
+model GefahrstoffKontext {
+  id                        String   @id @default(cuid())
+  gefahrstoffId             String   @unique
+  taetigkeit                String   @default("")
+  arbeitsbereich            String   @default("")
+  mengeHaeufigkeit          String   @default("")
+  vorhandeneSchutzmassnahmen String  @default("")
+  raeumlicheGegebenheiten   String   @default("")
+  aktualisiertAm            DateTime @default(now()) @updatedAt
+
+  gefahrstoff Gefahrstoff @relation(fields: [gefahrstoffId], references: [id], onDelete: Cascade)
+}
+
+enum VorschlagStatus {
+  OFFEN
+  GEPRUEFT_UEBERNOMMEN
+  GEPRUEFT_VERWORFEN
+}
+
+/// Result of comparing two SDB versions, one row per changed section.
+model Aenderungsvorschlag {
+  id              String          @id @default(cuid())
+  gefahrstoffId   String
+  alteSdbId       String
+  neueSdbId       String
+  abschnittsNummer Int
+  /// JSON encoded diff parts: [{ art: "gleich"|"entfernt"|"neu", text: "..." }]
+  diffText        String
+  status          VorschlagStatus @default(OFFEN)
+  erstelltAm      DateTime        @default(now())
+  geprueftAm      DateTime?
+  /// Free text note the user leaves when accepting or discarding.
+  notiz           String?
+
+  gefahrstoff Gefahrstoff @relation(fields: [gefahrstoffId], references: [id], onDelete: Cascade)
+  alteSdb     SdbDokument @relation("AlteSdb", fields: [alteSdbId], references: [id], onDelete: Cascade)
+  neueSdb     SdbDokument @relation("NeueSdb", fields: [neueSdbId], references: [id], onDelete: Cascade)
+
+  @@unique([alteSdbId, neueSdbId, abschnittsNummer])
+  @@index([gefahrstoffId, status])
+}
+
+enum DokumentTyp {
+  BETRIEBSANWEISUNG
+  GEFAEHRDUNGSBEURTEILUNG
+}
+
+enum DokumentStatus {
+  ENTWURF
+  VEROEFFENTLICHT
+}
+
+/// Operating instruction (TRGS 555) or risk assessment for one substance.
+model Dokument {
+  id            String         @id @default(cuid())
+  betriebId     String
+  gefahrstoffId String
+  typ           DokumentTyp
+  /// JSON encoded TRGS 555 sections, see lib/dokument-inhalt.ts
+  inhalt        String
+  status        DokumentStatus @default(ENTWURF)
+  version       Int            @default(1)
+  veroeffentlichtAm DateTime?
+  /// Content of the last published version, kept so that readers never see a draft.
+  veroeffentlichterInhalt String?
+  veroeffentlichteVersion Int?
+  aktualisiertAm DateTime      @default(now()) @updatedAt
+
+  betrieb     Betrieb     @relation(fields: [betriebId], references: [id], onDelete: Cascade)
+  gefahrstoff Gefahrstoff @relation(fields: [gefahrstoffId], references: [id], onDelete: Cascade)
+
+  @@unique([gefahrstoffId, typ])
+  @@index([betriebId])
+}
+
+/// Binary storage for uploaded PDFs and logos.
+///
+/// Storing the bytes in the database keeps the prototype deployable on
+/// platforms with a read only filesystem (e.g. Vercel). For production volumes
+/// this should move to an S3 compatible object store hosted in the EU.
+model Datei {
+  id         String   @id @default(cuid())
+  dateiName  String
+  mimeTyp    String
+  groesse    Int
+  inhalt     Bytes
+  erstelltAm DateTime @default(now())
+
+  betriebLogo Betrieb?     @relation("BetriebLogo")
+  sdbDokument SdbDokument?
+}

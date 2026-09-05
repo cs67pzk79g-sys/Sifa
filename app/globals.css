@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-slate-100 text-slate-900 antialiased;
+  }
+
+  /* Visible focus for keyboard users on every interactive element. */
+  :where(a, button, input, textarea, select, summary):focus-visible {
+    @apply outline-none ring-2 ring-marine-600 ring-offset-2 ring-offset-white;
+  }
+}
+
+@layer components {
+  .karte {
+    @apply rounded-xl border border-slate-200 bg-white shadow-sm;
+  }
+
+  .karte-kopf {
+    @apply flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4;
+  }
+
+  .karte-titel {
+    @apply text-base font-semibold text-slate-900;
+  }
+
+  .feld {
+    @apply block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-[15px] text-slate-900 placeholder:text-slate-400 focus:border-marine-600;
+  }
+
+  .etikett {
+    @apply mb-1.5 block text-sm font-medium text-slate-700;
+  }
+
+  .knopf {
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .knopf-primaer {
+    @apply knopf bg-marine-700 text-white hover:bg-marine-800;
+  }
+
+  .knopf-sekundaer {
+    @apply knopf border border-slate-300 bg-white text-slate-800 hover:bg-slate-50;
+  }
+
+  .knopf-gefahr {
+    @apply knopf border border-red-300 bg-white text-red-800 hover:bg-red-50;
+  }
+
+  .hinweis-box {
+    @apply rounded-lg border px-4 py-3 text-sm;
+  }
+}
