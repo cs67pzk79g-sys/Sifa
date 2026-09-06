@@ -59,8 +59,8 @@ sind. Den Leser-Link zeigt das Seed-Skript am Ende an; er steht außerdem unter
    Wort-Diff je geändertem Abschnitt
 6. **Strukturierter Hinweis** – Abschnitt, Einstufung, betroffene
    Dokumentabschnitte, Kontextbezug und Prüffragen
-7. **Manuell einarbeiten und veröffentlichen** – Editor nach TRGS 555 mit
-   Bestätigungspflicht
+7. **Manuell einarbeiten und veröffentlichen** – Editor nach TRGS 555, beim
+   ersten Öffnen aus dem SDB vorbefüllt (siehe unten), mit Bestätigungspflicht
 8. **PDF-Export** mit Firmenlogo und Haftungshinweis
 9. **Dashboard mit Ampel** – rot/gelb/grün nach offenem Handlungsbedarf
 10. **Leser-Link** ohne Login – zeigt ausschließlich veröffentlichte Fassungen
@@ -75,6 +75,38 @@ sind. Den Leser-Link zeigt das Seed-Skript am Ende an; er steht außerdem unter
 
 Die Einstufung je SDB-Abschnitt steht in `lib/sdb-abschnitte.ts` – dort liegen
 auch die betroffenen Dokumentabschnitte und die Prüffragen.
+
+## Vorbefüllung aus dem Sicherheitsdatenblatt
+
+Ein leeres Formular mit sechs Textfeldern ist der Punkt, an dem die Zielgruppe
+aufgibt. Deshalb wird eine Betriebsanweisung beim ersten Öffnen aus den Daten
+befüllt, die ohnehin schon vorliegen:
+
+| Abschnitt des Dokuments | Quelle |
+|---|---|
+| Anwendungsbereich | Gefahrstoffname, Hersteller und betrieblicher Kontext |
+| Gefahren für Mensch und Umwelt | SDB Abschnitt 2 |
+| Schutzmaßnahmen und Verhaltensregeln | SDB Abschnitt 7 und 8, dazu die erfassten vorhandenen Maßnahmen |
+| Verhalten im Gefahrfall | SDB Abschnitt 5 und 6 |
+| Erste Hilfe | SDB Abschnitt 4 |
+| Sachgerechte Entsorgung | SDB Abschnitt 13 |
+
+**Das ist ein Übertragen, kein Formulieren.** Jeder Satz stammt wörtlich aus dem
+hochgeladenen SDB oder aus dem, was der Nutzer im Kontext-Wizard eingegeben hat –
+nichts wird zusammengefasst, umformuliert oder erfunden. Es ist kein
+Sprachmodell und kein externer Dienst beteiligt, es entstehen keine Kosten, und
+die Daten verlassen den Server nicht.
+
+Der Preis dafür: Die Texte sind vollständig, aber noch nicht auf den Betrieb
+gekürzt. Genau das sagt der Hinweis über dem Editor, und unter jedem Feld steht,
+in welchem SDB-Abschnitt man es nachlesen kann.
+
+Am Ablauf ändert das nichts: Der Entwurf bleibt ein Entwurf, ist für Leser nicht
+sichtbar und wird nur durch die ausdrückliche Bestätigung veröffentlicht.
+
+Für ein Dokument, das schon existiert, gibt es im Editor den Knopf
+**„Leere Felder aus SDB befüllen"**. Er füllt ausschließlich leere Felder –
+selbst geschriebener Text wird nie überschrieben.
 
 ## Technik
 
@@ -169,7 +201,8 @@ prisma/
 
 ## Bewusst nicht Teil dieser Version
 
-Keine KI-generierte Formulierung von Dokumenttexten · keine Mehrsprachigkeit ·
+Keine KI-generierte Formulierung von Dokumenttexten (die Vorbefüllung überträgt
+wörtlich, sie formuliert nicht) · keine Mehrsprachigkeit ·
 keine Fristenüberwachung oder Erinnerungsmails · kein eigenes
 Gefahrstoffverzeichnis-Modul · keine granulare Rechteverwaltung · keine OCR für
 eingescannte SDB (nur textbasierte PDFs) · keine Mobile-App (responsive Web,

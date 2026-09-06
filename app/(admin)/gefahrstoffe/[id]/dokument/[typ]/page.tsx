@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { dokumentAbsenden } from "@/app/actions/dokument";
+import { dokumentAbsenden, vorbefuellungUebernehmen } from "@/app/actions/dokument";
 import { DokumentEditor } from "@/components/dokument-editor";
 import { Karte, StatusMarke, Zurueck, datumFormatieren } from "@/components/ui";
 import { nutzerErzwingen } from "@/lib/auth";
@@ -41,8 +41,9 @@ export default async function DokumentSeite({
   });
   if (!gefahrstoff) notFound();
 
-  const dokument = await dokumentSicherstellen(nutzer.betriebId, gefahrstoff.id, dokumentTyp);
-  if (!dokument) notFound();
+  const ergebnis = await dokumentSicherstellen(nutzer.betriebId, gefahrstoff.id, dokumentTyp);
+  if (!ergebnis) notFound();
+  const { dokument, quellen, neuVorbefuellt } = ergebnis;
 
   const veroeffentlicht = Boolean(dokument.veroeffentlichteVersion);
 
@@ -115,9 +116,12 @@ export default async function DokumentSeite({
 
       <DokumentEditor
         aktion={dokumentAbsenden}
+        uebernehmenAktion={vorbefuellungUebernehmen}
         dokumentId={dokument.id}
         inhalt={inhaltLesen(dokument.inhalt)}
+        quellen={quellen}
         bereitsVeroeffentlicht={veroeffentlicht}
+        vorbefuelltHinweis={neuVorbefuellt}
       />
     </div>
   );
