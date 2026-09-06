@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Erststart, Grundsatz, erststartSchritte } from "@/components/erststart";
 import { Ampel, Karte, Leer, StatusMarke, datumFormatieren } from "@/components/ui";
 import { AMPEL_STIL, type AmpelFarbe } from "@/lib/ampel";
 import { nutzerErzwingen } from "@/lib/auth";
@@ -22,6 +23,9 @@ export default async function Dashboard() {
     (a, b) => REIHENFOLGE.indexOf(a.ampel.farbe) - REIHENFOLGE.indexOf(b.ampel.farbe),
   );
 
+  const schritte = erststartSchritte(gefahrstoffe);
+  const imErststart = schritte.some((s) => !s.erledigt);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -30,11 +34,27 @@ export default async function Dashboard() {
           <p className="mt-1 text-sm text-slate-600">
             Wo besteht Handlungsbedarf? Rot und Gelb zuerst.
           </p>
+          {!imErststart ? (
+            <div className="mt-2">
+              <Grundsatz />
+            </div>
+          ) : null}
         </div>
-        <Link className="knopf-primaer" href="/gefahrstoffe">
-          Gefahrstoff anlegen
-        </Link>
+        {/* During onboarding the checklist carries the call to action - a second
+            button next to it only splits attention. */}
+        {!imErststart ? (
+          <Link className="knopf-primaer" href="/gefahrstoffe">
+            Gefahrstoff anlegen
+          </Link>
+        ) : null}
       </div>
+
+      {imErststart ? (
+        <>
+          <Grundsatz ausfuehrlich />
+          <Erststart schritte={schritte} />
+        </>
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-3">
         {zaehler.map(({ farbe, anzahl }) => {

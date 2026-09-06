@@ -6,6 +6,7 @@ const NAVIGATION = [
   { href: "/dashboard", label: "Übersicht" },
   { href: "/gefahrstoffe", label: "Gefahrstoffe" },
   { href: "/betrieb", label: "Betrieb" },
+  { href: "/hilfe", label: "Hilfe" },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

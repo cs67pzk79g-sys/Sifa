@@ -15,6 +15,8 @@ interface SchrittDefinition {
   frage: string;
   hilfe: string;
   beispiel: string;
+  /** What this answer is later used for - people answer better when they know. */
+  wofuer: string;
 }
 
 /**
@@ -28,6 +30,8 @@ const SCHRITTE: SchrittDefinition[] = [
     frage: "Wofür wird der Stoff bei Ihnen verwendet?",
     hilfe: "Beschreiben Sie die Tätigkeit so, wie Ihre Beschäftigten sie kennen – nicht in Fachsprache.",
     beispiel: "z. B. „Bremsteile vor der Montage mit der Sprühdose reinigen“",
+    wofuer:
+      "Steht später im Anwendungsbereich Ihrer Betriebsanweisung und wird in jedem Änderungshinweis zitiert.",
   },
   {
     feld: "arbeitsbereich",
@@ -35,6 +39,8 @@ const SCHRITTE: SchrittDefinition[] = [
     frage: "In welchem Bereich wird damit gearbeitet?",
     hilfe: "Nennen Sie den Ort, an dem der Stoff tatsächlich verwendet wird.",
     beispiel: "z. B. „Werkstatt, Hebebühne 2“ oder „Lager, Abfüllplatz“",
+    wofuer:
+      "Damit ein Hinweis nicht allgemein bleibt, sondern sagt: betrifft euren Einsatz in diesem Bereich.",
   },
   {
     feld: "mengeHaeufigkeit",
@@ -42,6 +48,8 @@ const SCHRITTE: SchrittDefinition[] = [
     frage: "Wie viel wird verwendet, und wie oft?",
     hilfe: "Eine grobe Schätzung genügt. Sie hilft später einzuschätzen, wie stark eine Änderung Sie betrifft.",
     beispiel: "z. B. „ca. 2 Dosen à 500 ml pro Woche, täglich kurzzeitig“",
+    wofuer:
+      "Hilft einzuschätzen, wie stark eine Änderung Sie trifft - tägliche Verwendung wiegt schwerer als zweimal im Jahr.",
   },
   {
     feld: "vorhandeneSchutzmassnahmen",
@@ -49,6 +57,8 @@ const SCHRITTE: SchrittDefinition[] = [
     frage: "Welche Schutzmaßnahmen gibt es heute schon?",
     hilfe: "Technisch (Absaugung), organisatorisch (Unterweisung) und persönlich (Handschuhe, Brille).",
     beispiel: "z. B. „Absaugung an der Hebebühne, Nitrilhandschuhe, Schutzbrille, jährliche Unterweisung“",
+    wofuer:
+      "Der wichtigste Punkt: Nur so kann die Software fragen, ob Ihre Ausrüstung für neue Vorgaben noch reicht.",
   },
   {
     feld: "raeumlicheGegebenheiten",
@@ -56,6 +66,8 @@ const SCHRITTE: SchrittDefinition[] = [
     frage: "Wie sind die räumlichen Bedingungen vor Ort?",
     hilfe: "Lüftung, Raumgröße, Nachbarbereiche, Lagerung in der Nähe.",
     beispiel: "z. B. „Halle mit Toren, natürliche Lüftung, Lagerung im Gefahrstoffschrank daneben“",
+    wofuer:
+      "Wichtig bei Änderungen zu Lüftung, Lagerung und Freisetzung.",
   },
 ];
 
@@ -149,7 +161,16 @@ export default async function KontextWizard({
               maxLength={1000}
               placeholder={aktuell.beispiel}
             />
-            <p className="mt-1.5 text-xs text-slate-500">{aktuell.beispiel}</p>
+            <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                So könnte eine Antwort aussehen
+              </p>
+              <p className="mt-1 text-sm text-slate-800">{aktuell.beispiel}</p>
+              <p className="mt-2 text-xs text-slate-600">
+                <span className="font-medium">Wofür wird das gebraucht? </span>
+                {aktuell.wofuer}
+              </p>
+            </div>
           </div>
         </AktionsFormular>
       </Karte>
