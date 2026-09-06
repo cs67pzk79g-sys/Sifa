@@ -36,7 +36,7 @@ const GEMEINSAM: Record<number, string> = {
     "Kohlendioxid (CAS 124-38-9), 5-10 %, Treibmittel",
   ].join("\n"),
   4: [
-    "Nach Einatmen: Fur Frischluft sorgen. Bei Beschwerden ärztlichen Rat einholen.",
+    "Nach Einatmen: Für Frischluft sorgen. Bei Beschwerden ärztlichen Rat einholen.",
     "Nach Hautkontakt: Mit Wasser und Seife abwaschen. Verunreinigte Kleidung wechseln.",
     "Nach Augenkontakt: 10 Minuten bei geöffnetem Lidspalt mit Wasser spülen. Augenarzt aufsuchen.",
     "Nach Verschlucken: Kein Erbrechen herbeiführen, Aspirationsgefahr. Sofort Arzt hinzuziehen.",

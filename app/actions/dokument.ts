@@ -4,7 +4,9 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { nutzerErzwingen } from "@/lib/auth";
-import { inhaltIstLeer, inhaltSchreiben } from "@/lib/dokument-inhalt";
+import { inhaltIstLeer, inhaltLesen, inhaltSchreiben } from "@/lib/dokument-inhalt";
+import { BA_ABSCHNITTE } from "@/lib/dokument-inhalt";
+import { leereFelderFuellen, vorbefuellungErzeugen } from "@/lib/vorbefuellung";
 import { dokumentInhaltSchema, fehlerAusZod } from "@/lib/validation";
 import type { FormZustand } from "@/lib/form-state";
 
@@ -98,4 +100,59 @@ export async function dokumentAbsenden(
   revalidatePath(`/gefahrstoffe/${dokument.gefahrstoffId}`);
   revalidatePath("/dashboard");
   redirect(`/gefahrstoffe/${dokument.gefahrstoffId}?dokument=veroeffentlicht`);
+}
+
+/**
+ * Fills the fields the user left empty from the latest safety data sheet and
+ * the company context. Text the user already wrote is never overwritten.
+ */
+export async function vorbefuellungUebernehmen(
+  _vorher: FormZustand,
+  formular: FormData,
+): Promise<FormZustand> {
+  const dokument = await eigenesDokument(String(formular.get("dokumentId") ?? ""));
+
+  const gefahrstoff = await prisma.gefahrstoff.findUnique({
+    where: { id: dokument.gefahrstoffId },
+    include: {
+      kontext: true,
+      sdbDokumente: { orderBy: { versionNummer: "desc" }, take: 1 },
+    },
+  });
+  if (!gefahrstoff) return { fehler: "Gefahrstoff nicht gefunden." };
+
+  const vorschlag = vorbefuellungErzeugen(
+    gefahrstoff,
+    gefahrstoff.kontext,
+    gefahrstoff.sdbDokumente[0] ?? null,
+  );
+  if (!vorschlag.hatInhalt) {
+    return {
+      fehler:
+        "Es gibt noch nichts zum Übertragen. Laden Sie zuerst ein Sicherheitsdatenblatt hoch oder erfassen Sie den betrieblichen Kontext.",
+    };
+  }
+
+  // Work on what is currently in the form, so unsaved edits are not lost.
+  const ausFormular = inhaltAusFormular(formular);
+  const basis = ausFormular.success ? ausFormular.data : inhaltLesen(dokument.inhalt);
+
+  const { inhalt, gefuellteFelder } = leereFelderFuellen(basis, vorschlag.inhalt);
+  if (gefuellteFelder.length === 0) {
+    return { erfolg: "Alle Felder sind bereits ausgefüllt - es wurde nichts überschrieben." };
+  }
+
+  await prisma.dokument.update({
+    where: { id: dokument.id },
+    data: { inhalt: inhaltSchreiben(inhalt), status: "ENTWURF" },
+  });
+
+  const namen = gefuellteFelder
+    .map((key) => BA_ABSCHNITTE.find((a) => a.key === key)?.titel ?? key)
+    .join(", ");
+
+  revalidatePath(`/gefahrstoffe/${dokument.gefahrstoffId}`);
+  return {
+    erfolg: `Aus dem Sicherheitsdatenblatt übertragen: ${namen}. Bitte prüfen und kürzen - veröffentlicht wird nichts automatisch.`,
+  };
 }
