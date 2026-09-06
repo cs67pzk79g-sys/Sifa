@@ -97,6 +97,35 @@ nichts wird zusammengefasst, umformuliert oder erfunden. Es ist kein
 Sprachmodell und kein externer Dienst beteiligt, es entstehen keine Kosten, und
 die Daten verlassen den Server nicht.
 
+### Was dabei weggelassen wird
+
+Übertragen wird nicht der ganze SDB-Abschnitt, sondern nur das, was nach
+TRGS 555 in eine Betriebsanweisung gehört. Das ist bewusst regelbasiert
+(`lib/ba-filter.ts`) und keine Ermessensfrage: Arbeitsplatzgrenzwerte (AGW),
+Lagerklassen und ähnliche Fachsystematik gehören in die Gefährdungsbeurteilung,
+nicht auf ein Blatt an der Werkbank.
+
+| SDB-Abschnitt | Wird weggelassen | Bleibt |
+|---|---|---|
+| 2 Gefahren | die Boilerplate-Überschrift („Einstufung gemäß …") | alle H- und P-Sätze, Signalwort, Piktogramme |
+| 7 Handhabung | Lagerklasse, WGK, spezifische Endanwendungen | Handhabung, Lagerung, Zusammenlagerung |
+| 8 Exposition | AGW, BGW, DNEL/PNEC, Überschreitungsfaktor | Hand-, Augen-, Atem-, Körperschutz, technische Maßnahmen |
+| 4, 5, 6, 13 | nichts | alles |
+
+Drei Sicherungen, damit die Regel nie Sicherheitsinformation verschluckt:
+
+- **Nichts verschwindet still.** Jede entfernte Zeile steht unter dem Feld in
+  einem aufklappbaren Block und lässt sich mit einem Klick zurückholen.
+- **Unbekannte Layouts bleiben unangetastet.** Greift keine Regel, wird der
+  Abschnitt vollständig übernommen.
+- **Würde eine Regel alles entfernen**, passt sie nicht zum Layout dieses
+  Herstellers – dann bleibt der Originaltext stehen.
+
+Die Überschriftenerkennung ist absichtlich eng gefasst (kurze Labels ohne
+Satzzeichen). Eine lockerere Fassung hielt im Test den Satz „H229 Behälter steht
+unter Druck: kann bersten" für eine Überschrift und hätte den H-Satz darüber
+mitgenommen.
+
 Der Preis dafür: Die Texte sind vollständig, aber noch nicht auf den Betrieb
 gekürzt. Genau das sagt der Hinweis über dem Editor, und unter jedem Feld steht,
 in welchem SDB-Abschnitt man es nachlesen kann.

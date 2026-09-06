@@ -1,9 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { BA_ABSCHNITTE, type DokumentInhalt } from "@/lib/dokument-inhalt";
 import { LEERER_ZUSTAND, type FormZustand } from "@/lib/form-state";
-import type { Quellen } from "@/lib/vorbefuellung";
+import type { Quellen, Weggelassen } from "@/lib/vorbefuellung";
 import { Erfolg, Fehler } from "./ui";
 
 type Aktion = (vorher: FormZustand, formular: FormData) => Promise<FormZustand>;
@@ -24,6 +24,7 @@ export function DokumentEditor({
   dokumentId,
   inhalt,
   quellen,
+  weggelassen,
   bereitsVeroeffentlicht,
   vorbefuelltHinweis,
 }: {
@@ -32,6 +33,7 @@ export function DokumentEditor({
   dokumentId: string;
   inhalt: DokumentInhalt;
   quellen: Quellen;
+  weggelassen: Weggelassen;
   bereitsVeroeffentlicht: boolean;
   vorbefuelltHinweis: boolean;
 }) {
@@ -41,7 +43,18 @@ export function DokumentEditor({
     LEERER_ZUSTAND,
   );
   const [bestaetigt, setBestaetigt] = useState(false);
+  const [zurueckgeholt, setZurueckgeholt] = useState<string[]>([]);
+  const felder = useRef(new Map<string, HTMLTextAreaElement | null>());
   const beschaeftigt = laeuft || uebernahmeLaeuft;
+
+  /** Appends the lines the filter left out back into the field. */
+  const zeilenZurueckholen = (key: string, zeilen: string[]) => {
+    const feld = felder.current.get(key);
+    if (!feld) return;
+    const vorhandenerText = feld.value.trimEnd();
+    feld.value = `${vorhandenerText}\n\n${zeilen.join("\n")}`;
+    setZurueckgeholt((bisher) => [...bisher, key]);
+  };
 
   return (
     <form action={formularAktion} className="space-y-5">
@@ -58,6 +71,8 @@ export function DokumentEditor({
 
       {BA_ABSCHNITTE.map((abschnitt) => {
         const herkunft = quellen[abschnitt.key] ?? [];
+        const ausgelassen = weggelassen[abschnitt.key] ?? [];
+        const schonZurueckgeholt = zurueckgeholt.includes(abschnitt.key);
         return (
           <div key={abschnitt.key} className="karte px-5 py-4">
             <label className="etikett text-[15px]" htmlFor={abschnitt.key}>
@@ -75,7 +90,43 @@ export function DokumentEditor({
               name={abschnitt.key}
               defaultValue={inhalt[abschnitt.key]}
               maxLength={5000}
+              ref={(element) => {
+                felder.current.set(abschnitt.key, element);
+              }}
             />
+
+            {ausgelassen.length > 0 ? (
+              <details className="mt-2">
+                <summary className="cursor-pointer text-xs text-slate-500 hover:text-slate-700">
+                  {ausgelassen.length === 1
+                    ? "1 Zeile aus dem Sicherheitsdatenblatt nicht übernommen"
+                    : `${ausgelassen.length} Zeilen aus dem Sicherheitsdatenblatt nicht übernommen`}{" "}
+                  – anzeigen
+                </summary>
+                <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <p className="mb-2 text-xs text-slate-600">
+                    Diese Angaben gehören in die Gefährdungsbeurteilung, nicht in eine
+                    Betriebsanweisung an der Wand. Wenn sie in Ihrem Fall doch hineingehören,
+                    holen Sie sie hier zurück.
+                  </p>
+                  <ul className="space-y-1 text-xs text-slate-700">
+                    {ausgelassen.map((zeile, index) => (
+                      <li key={index} className="break-words">
+                        {zeile}
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    type="button"
+                    disabled={schonZurueckgeholt}
+                    onClick={() => zeilenZurueckholen(abschnitt.key, ausgelassen)}
+                    className="mt-3 text-xs font-medium text-marine-700 hover:underline disabled:text-slate-400 disabled:no-underline"
+                  >
+                    {schonZurueckgeholt ? "Zurückgeholt – bitte speichern" : "Doch übernehmen"}
+                  </button>
+                </div>
+              </details>
+            ) : null}
           </div>
         );
       })}

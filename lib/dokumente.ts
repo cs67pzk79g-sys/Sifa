@@ -1,7 +1,7 @@
 import "server-only";
 import { prisma } from "./prisma";
 import { LEERER_INHALT, inhaltSchreiben } from "./dokument-inhalt";
-import { vorbefuellungErzeugen, type Quellen } from "./vorbefuellung";
+import { vorbefuellungErzeugen, type Quellen, type Weggelassen } from "./vorbefuellung";
 
 const LEERE_QUELLEN: Quellen = {
   anwendungsbereich: [],
@@ -44,7 +44,12 @@ export async function dokumentSicherstellen(
     where: { gefahrstoffId_typ: { gefahrstoffId, typ } },
   });
   if (vorhanden) {
-    return { dokument: vorhanden, quellen: vorbefuellung.quellen, neuVorbefuellt: false };
+    return {
+      dokument: vorhanden,
+      quellen: vorbefuellung.quellen,
+      weggelassen: vorbefuellung.weggelassen,
+      neuVorbefuellt: false,
+    };
   }
 
   const dokument = await prisma.dokument.create({
@@ -59,8 +64,10 @@ export async function dokumentSicherstellen(
   return {
     dokument,
     quellen: vorbefuellung.quellen,
+    weggelassen: vorbefuellung.weggelassen,
     neuVorbefuellt: vorbefuellung.hatInhalt,
   };
 }
 
 export { LEERE_QUELLEN };
+export type { Weggelassen };
