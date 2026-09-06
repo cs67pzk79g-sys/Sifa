@@ -80,6 +80,37 @@ export default async function VorschlagSeite({
 
       <VorschlagBanner />
 
+      <details className="karte px-5 py-4">
+        <summary className="cursor-pointer text-sm font-medium text-slate-900">
+          Was heißt das jetzt für mich?
+        </summary>
+        <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-slate-700">
+          <li>
+            <strong>Lesen, was sich geändert hat.</strong> Weiter unten steht der Vergleich: Rot ist
+            aus der alten Fassung verschwunden, Grün ist neu hinzugekommen.
+          </li>
+          <li>
+            <strong>Entscheiden, ob es Sie betrifft.</strong> Dabei helfen die Prüffragen und Ihre
+            eigenen Angaben zum Betrieb, die darüber stehen.
+          </li>
+          <li>
+            <strong>Wenn ja: Dokument anpassen.</strong> Unten finden Sie die Links zur
+            Betriebsanweisung und zur Gefährdungsbeurteilung. Den Text schreiben Sie selbst – die
+            Software ändert dort nichts.
+          </li>
+          <li>
+            <strong>Abhaken.</strong> „Geprüft und eingearbeitet“, wenn Sie etwas geändert haben.
+            „Geprüft, nicht relevant“, wenn die Änderung Sie nicht betrifft – etwa eine Neuerung
+            beim Transport, wenn Sie den Stoff nie außer Haus fahren.
+          </li>
+        </ol>
+        <p className="mt-3 text-sm text-slate-600">
+          Das Abhaken bedeutet: <em>Sie</em> haben es geprüft. Es heißt nicht, dass die Software
+          etwas geändert hätte. Erst danach verschwindet der Punkt aus Ihrer Liste und die Ampel
+          kann auf Grün springen.
+        </p>
+      </details>
+
       <Karte titel="Strukturierter Hinweis">
         <p className="text-[15px] font-medium text-slate-900">{hinweis.ueberschrift}</p>
 

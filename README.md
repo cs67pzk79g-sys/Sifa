@@ -65,6 +65,25 @@ sind. Den Leser-Link zeigt das Seed-Skript am Ende an; er steht außerdem unter
 9. **Dashboard mit Ampel** – rot/gelb/grün nach offenem Handlungsbedarf
 10. **Leser-Link** ohne Login – zeigt ausschließlich veröffentlichte Fassungen
 
+## Hilfe für Erstnutzer
+
+Die Zielgruppe hat keine Erfahrung mit solcher Software, und die häufigsten
+Missverständnisse sind bekannt (sie stammen aus dem ersten Testdurchlauf):
+
+- **Geführter Erststart.** Statt eines leeren Dashboards eine nummerierte
+  Anleitung, die den echten Datenstand auswertet (`components/erststart.tsx`)
+  und verschwindet, sobald das erste Dokument veröffentlicht ist.
+- **Der Grundsatz sichtbar:** „Die Software schlägt vor – Sie entscheiden."
+  Ausführlich während des Erststarts, danach als Kurzform im Kopf der Übersicht.
+- **Hilfe-Seite** (`/hilfe`, ohne Anmeldung erreichbar): der ganze Ablauf mit
+  je einer Zeile „Software" und „Sie", ein Glossar (SDB, Betriebsanweisung,
+  GBU, H-/P-Sätze, AGW, TRGS 555, Unternehmermodell, Ampel, Leser-Link) und
+  häufige Fragen.
+- **Erklärungen dort, wo es hakt:** auf der Vorschlagsseite ein aufklappbares
+  „Was heißt das jetzt für mich?", über den Prüfknöpfen ein Satz dazu, was
+  Abhaken bedeutet, und im Kontext-Wizard je Schritt eine Beispielantwort samt
+  Begründung, wofür die Angabe gebraucht wird.
+
 ## Ampel-Logik
 
 | Farbe | Bedeutung |

@@ -25,6 +25,12 @@ export function VorschlagPruefung({
   return (
     <form action={formularAktion} className="space-y-4">
       <input type="hidden" name="vorschlagId" value={vorschlagId} />
+      {!bereitsGeprueft ? (
+        <p className="text-sm text-slate-600">
+          Haken Sie erst ab, wenn Sie das Dokument angepasst haben – oder wenn Sie sicher sind,
+          dass die Änderung Ihren Betrieb nicht betrifft.
+        </p>
+      ) : null}
       <div>
         <label className="etikett" htmlFor="notiz">
           Notiz zur Prüfung (optional)
@@ -73,6 +79,11 @@ export function VorschlagPruefung({
           </button>
         </div>
       )}
+      {!bereitsGeprueft ? (
+        <p className="text-xs text-slate-500">
+          Eine kurze Notiz lohnt sich: Sie ist später Ihr Nachweis, warum Sie so entschieden haben.
+        </p>
+      ) : null}
     </form>
   );
 }
