@@ -43,7 +43,7 @@ export default async function DokumentSeite({
 
   const ergebnis = await dokumentSicherstellen(nutzer.betriebId, gefahrstoff.id, dokumentTyp);
   if (!ergebnis) notFound();
-  const { dokument, quellen, neuVorbefuellt } = ergebnis;
+  const { dokument, quellen, weggelassen, neuVorbefuellt } = ergebnis;
 
   const veroeffentlicht = Boolean(dokument.veroeffentlichteVersion);
 
@@ -120,6 +120,7 @@ export default async function DokumentSeite({
         dokumentId={dokument.id}
         inhalt={inhaltLesen(dokument.inhalt)}
         quellen={quellen}
+        weggelassen={weggelassen}
         bereitsVeroeffentlicht={veroeffentlicht}
         vorbefuelltHinweis={neuVorbefuellt}
       />

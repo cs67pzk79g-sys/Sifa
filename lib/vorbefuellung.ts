@@ -10,14 +10,22 @@
 import type { Gefahrstoff, GefahrstoffKontext, SdbDokument } from "@prisma/client";
 import type { DokumentInhalt } from "./dokument-inhalt";
 import type { BaAbschnittKey } from "./sdb-abschnitte";
+import { abschnittFiltern } from "./ba-filter";
 import { abschnitteLesen } from "./sdb-parser";
 
 /** Where the user can verify a given block - shown in the editor, not in the document. */
 export type Quellen = Record<BaAbschnittKey, string[]>;
 
+/**
+ * Lines the filter left out, per document section, so the editor can show them
+ * and offer to put them back. Nothing is ever dropped silently.
+ */
+export type Weggelassen = Record<BaAbschnittKey, string[]>;
+
 export interface Vorbefuellung {
   inhalt: DokumentInhalt;
   quellen: Quellen;
+  weggelassen: Weggelassen;
   /** True when at least one field could be filled. */
   hatInhalt: boolean;
 }
@@ -46,7 +54,19 @@ export function vorbefuellungErzeugen(
   sdb: SdbDokument | null,
 ): Vorbefuellung {
   const abschnitte = sdb ? abschnitteLesen(sdb.abschnitte) : {};
-  const ausSdb = (nummer: number) => (sdb ? abschnittsText(abschnitte, nummer) : "");
+
+  // Everything the manufacturer wrote that the operating instruction does not
+  // need, collected per SDB section so it can be shown to the user.
+  const gefiltert = new Map<number, { behalten: string; weggelassen: string[] }>();
+  const ausSdb = (nummer: number) => {
+    if (!sdb) return "";
+    const zwischen = gefiltert.get(nummer);
+    if (zwischen) return zwischen.behalten;
+    const ergebnis = abschnittFiltern(abschnittsText(abschnitte, nummer), nummer);
+    const eintrag = { behalten: ergebnis.behalten.join("\n").trim(), weggelassen: ergebnis.weggelassen };
+    gefiltert.set(nummer, eintrag);
+    return eintrag.behalten;
+  };
 
   const taetigkeit = kontext?.taetigkeit?.trim() ?? "";
   const arbeitsbereich = kontext?.arbeitsbereich?.trim() ?? "";
@@ -90,9 +110,22 @@ export function vorbefuellungErzeugen(
     entsorgung: sdbHinweis(13),
   };
 
+  const weggelassenAus = (...nummern: number[]) =>
+    nummern.flatMap((n) => gefiltert.get(n)?.weggelassen ?? []);
+
+  const weggelassen: Weggelassen = {
+    anwendungsbereich: [],
+    gefahren: weggelassenAus(2),
+    schutzmassnahmen: weggelassenAus(7, 8),
+    verhaltenImGefahrfall: weggelassenAus(5, 6),
+    ersteHilfe: weggelassenAus(4),
+    entsorgung: weggelassenAus(13),
+  };
+
   return {
     inhalt,
     quellen,
+    weggelassen,
     hatInhalt: Object.values(inhalt).some((wert) => wert.trim().length > 0),
   };
 }
